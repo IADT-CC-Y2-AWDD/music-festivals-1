@@ -28,4 +28,17 @@ function chosen($key, $search) {
   }
   return $chosen;
 }
+function exception_occurred() {
+  global $errors;
+  return (isset($errors) && is_array($errors) && array_key_exists(KEY_EXCEPTION, $errors));
+}
+function get_exception() {
+  global $errors;
+  if (isset($errors) && is_array($errors) && array_key_exists(KEY_EXCEPTION, $errors)) {
+    return $errors[KEY_EXCEPTION];
+  }
+  else {
+    return "";
+  }
+}
 ?>

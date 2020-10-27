@@ -15,12 +15,18 @@
       </li>
     </ul>
     <ul class="navbar-nav ml-auto">
+      <?php if (!isset($_SESSION) || !array_key_exists("email", $_SESSION)) { ?>
       <li class="nav-item">
         <a class="nav-link" href="<?= APP_URL ?>/login-form.php">Login</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="<?= APP_URL ?>/register-form.php">Register</a>
       </li>
+      <?php } else { ?>
+        <li class="nav-item">
+          <a class="nav-link" href="<?= APP_URL ?>/logout.php">Logout</a>
+        </li>
+      <?php } ?>
     </ul>
   </div>
 </nav>

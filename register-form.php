@@ -31,8 +31,8 @@ else if ($method === "POST") {
       <?php require 'include/navbar.php'; ?>
       <main role="main">
         <?php require 'include/exception.php'; ?>
-        <h1>Login Form</h1>
-        <form name='login' action="login.php" method="post">
+        <h1>Register Form</h1>
+        <form name='register' action="register.php" method="post">
 
           <div class="form-field">
             <label for="email">Email:</label>
@@ -44,6 +44,12 @@ else if ($method === "POST") {
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" />
             <span class="error"><?= get_error('password') ?></span>
+          </div>
+
+          <div class="form-field">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" value="<?= get_value('name') ?>" />
+            <span class="error"><?= get_error('name') ?></span>
           </div>
 
           <div class="form-field">

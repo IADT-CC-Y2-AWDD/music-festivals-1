@@ -9,7 +9,7 @@ if (is_logged_in()) {
 
 try {
   $allowed_params = [
-    "email",      "password"
+    "email",      "password",   "name"
   ];
 
   $post_params = get_post_params($allowed_params);
@@ -17,12 +17,16 @@ try {
 
   validate_email($post_params['email']);
   validate_password($post_params['password']);
+  validate_name($post_params['name']);
 
   $email = $post_params['email'];
   $password = $post_params['password'];
+  $name = $post_params['name'];
   $conn = null;
 
-  // if there were no validation errors, check the username and password
+  // if there are no validdation errors, check if the user's email adress is already registered
+  //  - if it is, add an error message to the $errors array
+  //  - otherwise add the user's details to the database
   if (empty($errors)) {
     // connect to the database
     $conn = new PDO("mysql:host=".DB_SERVER.";dbname=".DB_DATABASE, DB_USERNAME, DB_PASSWORD);
@@ -41,18 +45,31 @@ try {
       $message = "SQLSTATE error code = ".$error_info[0]."; error message = ".$error_info[2];
       throw new Exception("Database error executing database select query: " . $message);
     }
-    // if select query returned no rows, add an error message to the errors array
-    if ($select_stmt->rowCount() === 0) {
-      $errors['email'] = "Email address/password invalid";
+    // if select query returned at least one row, add an error message to the $errors array
+    if ($select_stmt->rowCount() !== 0) {
+      $errors['email'] = "Email address already registered";
     }
-    // if select query returned at least one row, then
-    //  - check the password against the password from the first returned row
-    //  - if the passwords do not match, add an error message to the errors array
-    else if ($select_stmt->rowCount() !== 0) {
-      $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
-      $password_hash = $row['password'];
-      if (!password_verify($password, $password_hash)) {
-        $errors['email'] = "Email address/password invalid";
+    // otherwise if select query returned no rows, add the user's details to the database
+    else if ($select_stmt->rowCount() === 0) {
+      // execute a query to insert the user's details into the database
+      $insert_sql = "INSERT INTO users (email, password, name) VALUES (:email, :password, :name)";
+      $password_hash = password_hash($password, PASSWORD_DEFAULT);
+      $insert_params = [
+        ":email" => $email,
+        ":password" => $password_hash,
+        ":name" => $name
+      ];
+      $insert_stmt = $conn->prepare($insert_sql);
+      $insert_status = $insert_stmt->execute($insert_params);
+      // if there was an error executing the insert query, throw an exception
+      if (!$insert_status) {
+        $error_info = $insert_stmt->errorInfo();
+        $message = "SQLSTATE error code = ".$error_info[0]."; error message = ".$error_info[2];
+        throw new Exception("Database error executing database insert query: " . $message);
+      }
+      // if insert query did not insert exactly one row, throw an exception
+      if ($insert_stmt->rowCount() !== 1) {
+        throw new Exception("Failed to insert new user.");
       }
     }
   }
@@ -66,11 +83,11 @@ catch(Exception $e) {
 }
 // whether an exception occurred or not
 finally {
-  // close the connection
+  // close the database connection
   $conn = null;
 }
 
-// if there are no errors then
+// if there were no errors then
 if (empty($errors)) {
   // log the user in by storing their email and name in the session array
   $_SESSION['email'] = $email;
@@ -78,9 +95,9 @@ if (empty($errors)) {
   // redirect the user to their home page
   redirect("/home.php");
 }
-// else if there are errors then
+// else if there were errors then
 else if (!empty($errors)) {
-  // display the login form again with submitted data and error messages
-  require 'login-form.php';
+  // display the register form again with submitted data and error messages
+  require 'register-form.php';
 }
 ?>

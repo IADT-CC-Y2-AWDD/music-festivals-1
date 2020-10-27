@@ -1,4 +1,10 @@
-<?php require_once 'config.php'; ?>
+<?php
+require_once 'config.php';
+
+if (!is_logged_in()) {
+  redirect("/login-form.php");
+}
+?>
 <!doctype html>
 <html lang="en">
   <head>

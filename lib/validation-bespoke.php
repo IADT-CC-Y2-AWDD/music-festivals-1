@@ -25,4 +25,13 @@ function validate_password($password) {
     $errors['password'] = "Password is too short or long";
   }
 }
+function validate_name($name) {
+  global $errors;
+  if (!is_present($name)) {
+    $errors['name'] = "Name required";
+  }
+  else if (!has_length($name, ["min" => 2, "max" => 64])) {
+    $errors['name'] = "Name is too short or long";
+  }
+}
 ?>
