@@ -50,6 +50,7 @@ try {
     //  - if the passwords do not match, add an error message to the errors array
     else if ($select_stmt->rowCount() !== 0) {
       $row = $select_stmt->fetch(PDO::FETCH_ASSOC);
+      $name = $row['name'];
       $password_hash = $row['password'];
       if (!password_verify($password, $password_hash)) {
         $errors['email'] = "Email address/password invalid";
