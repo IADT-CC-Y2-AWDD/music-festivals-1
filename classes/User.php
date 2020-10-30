@@ -12,10 +12,9 @@ class User {
   }
 
   public function save() {
-    $conn = null;
     try {
       $db = DB::getInstance();
-      $conn = $db->getConnection();
+      $conn = $db->open();
 
       $params = [
         ":email" => $this->email,
@@ -47,7 +46,7 @@ class User {
       }
     }
     finally {
-      $conn = null;
+      $db->close();
     }
   }
 
@@ -55,7 +54,7 @@ class User {
     try {
       if ($this->id !== null) {
         $db = DB::getInstance();
-        $conn = $db->getConnection();
+        $conn = $db->open();
 
         $sql = "DELETE FROM users WHERE id = :id" ;
         $params = [
@@ -76,7 +75,7 @@ class User {
       }
     }
     finally {
-      $conn = null;
+      $db->close();
     }
   }
 
@@ -85,7 +84,7 @@ class User {
 
     try {
       $db = DB::getInstance();
-      $conn = $db->getConnection();
+      $conn = $db->open();
 
       $select_sql = "SELECT * FROM users";
       $select_stmt = $conn->prepare($select_sql);
@@ -112,7 +111,7 @@ class User {
       }
     }
     finally {
-      $conn = null;
+      $db->close();
     }
 
     return $users;
@@ -123,7 +122,7 @@ class User {
 
     try {
       $db = DB::getInstance();
-      $conn = $db->getConnection();
+      $conn = $db->open();
 
       $select_sql = "SELECT * FROM users WHERE id = :id";
       $select_params = [
@@ -148,7 +147,7 @@ class User {
       }
     }
     finally {
-      $conn = null;
+      $db->close();
     }
 
     return $user;
@@ -159,7 +158,7 @@ class User {
 
     try {
       $db = DB::getInstance();
-      $conn = $db->getConnection();
+      $conn = $db->open();
 
       $select_sql = "SELECT * FROM users WHERE email = :email";
       $select_params = [
@@ -184,7 +183,7 @@ class User {
       }
     }
     finally {
-      $conn = null;
+      $db->close();
     }
 
     return $user;
