@@ -28,7 +28,7 @@ try {
     if ($user === null) {
       $errors['email'] = "Email address/password invalid";
     }
-    else if ($user === null) {
+    else if ($user !== null) {
       if (!password_verify($password, $user->password)) {
         $errors['email'] = "Email address/password invalid";
       }
@@ -43,8 +43,8 @@ catch(Exception $e) {
 }
 
 if (empty($errors)) {
-  $_SESSION['email'] = $email;
-  $_SESSION['name'] = $name;
+  $_SESSION['email'] = $user->email;
+  $_SESSION['name'] = $user->name;
   redirect("/home.php");
 }
 else if (!empty($errors)) {

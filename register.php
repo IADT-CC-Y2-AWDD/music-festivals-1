@@ -47,8 +47,8 @@ catch(Exception $e) {
 }
 
 if (empty($errors)) {
-  $_SESSION['email'] = $email;
-  $_SESSION['name'] = $name;
+  $_SESSION['email'] = $new_user->email;
+  $_SESSION['name'] = $new_user->name;
   redirect("/home.php");
 }
 else if (!empty($errors)) {
