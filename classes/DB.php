@@ -1,7 +1,5 @@
 <?php
 class DB {
-  private static $instance = null;
-
   private $server = DB_SERVER;
   private $database = DB_DATABASE;
   private $username = DB_USERNAME;
@@ -10,17 +8,9 @@ class DB {
   private $conn;
   private $dsn;
 
-  private function __construct() {
+  public function __construct() {
     $this->dsn = "mysql:host={$this->server};dbname={$this->database}";
     $this->conn = null;
-  }
-
-  public static function getInstance()
-  {
-    if (!self::$instance) {
-      self::$instance = new DB();
-    }
-    return self::$instance;
   }
 
   public function open() {

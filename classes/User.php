@@ -1,6 +1,4 @@
 <?php
-require_once "classes/DB.php";
-
 class User {
   public $id;
   public $email;
@@ -13,7 +11,7 @@ class User {
 
   public function save() {
     try {
-      $db = DB::getInstance();
+      $db = new DB();
       $conn = $db->open();
 
       $params = [
@@ -53,7 +51,7 @@ class User {
   public function delete() {
     try {
       if ($this->id !== null) {
-        $db = DB::getInstance();
+        $db = new DB();
         $conn = $db->open();
 
         $sql = "DELETE FROM users WHERE id = :id" ;
@@ -83,7 +81,7 @@ class User {
     $users = array();
 
     try {
-      $db = DB::getInstance();
+      $db = new DB();
       $conn = $db->open();
 
       $select_sql = "SELECT * FROM users";
@@ -121,7 +119,7 @@ class User {
     $user = null;
 
     try {
-      $db = DB::getInstance();
+      $db = new DB();
       $conn = $db->open();
 
       $select_sql = "SELECT * FROM users WHERE id = :id";
@@ -157,7 +155,7 @@ class User {
     $user = null;
 
     try {
-      $db = DB::getInstance();
+      $db = new DB();
       $conn = $db->open();
 
       $select_sql = "SELECT * FROM users WHERE email = :email";

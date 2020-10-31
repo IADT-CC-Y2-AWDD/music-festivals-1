@@ -2,7 +2,6 @@
 require_once 'config.php';
 require_once 'lib/validation-generic.php';
 require_once 'lib/validation-bespoke.php';
-require_once 'classes/User.php';
 
 if (is_logged_in()) {
   redirect("/home.php");
