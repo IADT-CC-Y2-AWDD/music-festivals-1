@@ -9,7 +9,7 @@ if (is_logged_in()) {
 
 try {
   $allowed_params = [
-    "email",      "password"
+    "email", "password"
   ];
 
   $post_params = get_post_params($allowed_params);

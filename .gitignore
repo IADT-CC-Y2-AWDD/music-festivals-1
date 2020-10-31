@@ -1,4 +1,3 @@
 composer.lock
 .phpunit.result.cache
-phpunit-9.3.11.phar
 vendor/
