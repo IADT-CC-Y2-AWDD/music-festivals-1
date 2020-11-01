@@ -1,3 +1,3 @@
-<?php if (exception_occurred()) { ?>
-<div class="alert alert-warning" role="alert"><?= get_exception(  ) ?></div>
+<?php if (isset($request) && $request->has_exception()) { ?>
+<div class="alert alert-warning" role="alert"><?= $request->get_exception(  ) ?></div>
 <?php } ?>

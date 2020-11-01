@@ -9,6 +9,8 @@ if (is_logged_in()) {
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === "GET") {
   // retrieving the form so it can be completed and submitted
+  $request = new HttpRequest();
+  $request->initialise();
 }
 else if ($method === "POST") {
   // the form was submitted but there are errors
@@ -36,20 +38,20 @@ else if ($method === "POST") {
 
           <div class="form-field">
             <label for="email">Email:</label>
-            <input type="text" name="email" id="email" value="<?= get_value('email') ?>" />
-            <span class="error"><?= get_error('email') ?></span>
+            <input type="text" name="email" id="email" value="<?= $request->input('email') ?>" />
+            <span class="error"><?= $request->error('email') ?></span>
           </div>
 
           <div class="form-field">
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" />
-            <span class="error"><?= get_error('password') ?></span>
+            <span class="error"><?= $request->error('password') ?></span>
           </div>
 
           <div class="form-field">
             <label for="name">Name:</label>
-            <input type="text" name="name" id="name" value="<?= get_value('name') ?>" />
-            <span class="error"><?= get_error('name') ?></span>
+            <input type="text" name="name" id="name" value="<?= $request->input('name') ?>" />
+            <span class="error"><?= $request->error('name') ?></span>
           </div>
 
           <div class="form-field">

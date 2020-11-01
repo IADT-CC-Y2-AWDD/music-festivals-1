@@ -8,28 +8,25 @@ if (is_logged_in()) {
 }
 
 try {
-  $allowed_params = [
-    "email",      "password",   "name"
+  $request = new HttpRequest();
+  $request->initialise();
+  $rules = [
+    "email" => "present|email|minlength:7|maxlength:64",
+    "password" => "present|minlength:8|maxlength:64",
+    "name" => "present|minlength:2|maxlength:64"
   ];
-
-  $post_params = get_post_params($allowed_params);
-  $errors = [];
-
-  validate_email($post_params['email']);
-  validate_password($post_params['password']);
-  validate_name($post_params['name']);
-
-  $email = $post_params['email'];
-  $password = $post_params['password'];
-  $name = $post_params['name'];
+  $request->validate($rules);
   $conn = null;
 
-  if (empty($errors)) {
+  if ($request->is_valid()) {
+    $email = $request->input("email");
     $user = User::findByEmail($email);
     if ($user !== null) {
-      $errors['email'] = "Email address already registered";
+      $request->set_error("email", "Email address already registered");
     }
     else if ($user === null) {
+      $password = $request->input("password");
+      $name = $request->input("name");
       $new_user = new User();
       $new_user->email = $email;
       $new_user->password = password_hash($password, PASSWORD_DEFAULT);
@@ -39,18 +36,18 @@ try {
   }
 }
 catch(PDOException $e) {
-  $errors[KEY_EXCEPTION] = "Database exception: " . $e->getMessage();
+  $request->set_exception("Database exception: " . $e->getMessage());
 }
 catch(Exception $e) {
-  $errors[KEY_EXCEPTION] = "Exception: " . $e->getMessage();
+  $request->set_exception("Exception: " . $e->getMessage());
 }
 
-if (empty($errors)) {
+if ($request->is_valid()) {
   $_SESSION['email'] = $new_user->email;
   $_SESSION['name'] = $new_user->name;
   redirect("/home.php");
 }
-else if (!empty($errors)) {
+else if (!$request->is_valid()) {
   require 'register-form.php';
 }
 ?>
