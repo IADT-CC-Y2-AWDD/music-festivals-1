@@ -6,14 +6,36 @@ use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase {
 
-  protected function setUp(): void {
+  protected function setUp() : void {
+  }
+
+  public function testFindAll() : void {
+    $users = User::findAll();
+    $this->assertNotNull($users);
+    $this->assertIsArray($users);
+  }
+
+  public function testFindById() : void {
+    $user = User::findById(1);
+    $this->assertNotNull($user);
+    $this->assertInstanceOf(User::class, $user);
+    $this->assertEquals($user->id, 1);
+
+    $user = User::findById(0);
+    $this->assertNull($user);
+  }
+
+  public function testFindByEmail() : void {
+    $user = User::findByEmail("francis@bloggs.com");
+    $this->assertNotNull($user);
+    $this->assertInstanceOf(User::class, $user);
+    $this->assertEquals($user->email, "francis@bloggs.com");
+
+    $user = User::findByEmail("banana@abc.com");
+    $this->assertNull($user);
   }
 
   public function testSaveInsert() : void {
-    $users = User::findAll();
-    $this->assertIsArray($users);
-    $current_num_users = count($users);
-
     $user = new User();
     $user->email = "test@dummy.com";
     $user->password = password_hash('mysecret', PASSWORD_DEFAULT);
@@ -28,19 +50,12 @@ final class UserTest extends TestCase {
     $this->assertEquals($found_user->password, $user->password);
     $this->assertEquals($found_user->name, $user->name);
 
-    $users = User::findAll();
-    $this->assertIsArray($users);
-    $new_num_users = count($users);
-    $this->assertEquals($current_num_users + 1, $new_num_users);
-  }
-
-  public function testFindByEmail() : void {
-    $user = User::findByEmail("test@dummy.com");
-    $this->assertNotNull($user);
-    $this->assertEquals($user->email, "test@dummy.com");
-
-    $user = User::findByEmail("banana@abc.com");
-    $this->assertNull($user);
+    $this->expectException(PDOException::class);
+    $user = new User();
+    $user->email = "test@dummy.com";
+    $user->password = password_hash('mysecret', PASSWORD_DEFAULT);
+    $user->name = "Test Dummy";
+    $user->save();
   }
 
    public function testSaveUpdate() : void {
@@ -71,10 +86,8 @@ final class UserTest extends TestCase {
 
     $user = User::findByEmail("test_update@dummy.com");
     $this->assertNull($user);
+  }
 
-    $users = User::findAll();
-    $this->assertIsArray($users);
-    $new_num_users = count($users);
-    $this->assertEquals($current_num_users - 1, $new_num_users);
+  protected function tearDown() : void {
   }
 }
