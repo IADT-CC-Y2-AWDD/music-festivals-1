@@ -8,6 +8,7 @@ class HttpRequest {
   private $errors = null;
 
   public function __construct() {}
+    
   public function initialise($data = null) {
     $this->init_request_method();
     $this->init_request_uri();
@@ -59,7 +60,7 @@ class HttpRequest {
     }
   }
 
-  protected function is_present($key) {
+  private function is_present($key) {
     $value = $this->data[$key];
   	if (is_array($value)) {
       return TRUE;
@@ -69,7 +70,7 @@ class HttpRequest {
       return isset($trimmed_value) && $trimmed_value !== "";
     }
   }
-  protected function has_length($key, $options=[]) {
+  private function has_length($key, $options=[]) {
     $value = $this->data[$key];
   	if(isset($options['max']) && (strlen($value) > (int)$options['max'])) {
   		return false;
@@ -82,25 +83,25 @@ class HttpRequest {
   	}
   	return true;
   }
-  protected function has_no_html_tags($key) {
+  private function has_no_html_tags($key) {
     $value = $this->data[$key];
     return strcmp($value, strip_tags($value)) === 0;
   }
-  protected function is_safe_email($key) {
+  private function is_safe_email($key) {
     $email = $this->data[$key];
     $sanitized_email = filter_var($email, FILTER_SANITIZE_EMAIL);
     return strcmp($email, $sanitized_email) === 0;
   }
-  protected function is_valid_email($key) {
+  private function is_valid_email($key) {
     $email = $this->data[$key];
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== FALSE;
   }
-  protected function is_safe_float($key) {
+  private function is_safe_float($key) {
     $float = $this->data[$key];
     $sanitized_float = filter_var($float, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
     return strcmp($float, $sanitized_float) === 0;
   }
-  protected function is_valid_float($key) {
+  private function is_valid_float($key) {
     $float = $this->data[$key];
     $options = array(
       'options' => [ "decimal" => "."],
@@ -108,29 +109,29 @@ class HttpRequest {
     );
     return filter_var($float, FILTER_VALIDATE_FLOAT, $options) !== FALSE;
   }
-  protected function is_safe_integer($key) {
+  private function is_safe_integer($key) {
     $integer = $this->data[$key];
     $sanitized_integer = filter_var($integer, FILTER_SANITIZE_NUMBER_INT);
     return strcmp($integer, $sanitized_integer) === 0;
   }
-  protected function is_valid_integer($key, $range = []) {
+  private function is_valid_integer($key, $range = []) {
     $integer = $this->data[$key];
     $options = array("options" => $range);
     return filter_var($integer, FILTER_VALIDATE_INT, $options) !== FALSE;
   }
-  protected function is_valid_boolean($key) {
+  private function is_valid_boolean($key) {
     $boolean = $this->data[$key];
     return filter_var($boolean, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== NULL;
   }
-  protected function is_match($key, $regex='//') {
+  private function is_match($key, $regex='//') {
     $value = $this->data[$key];
     return preg_match($regex, $value) === 1;
   }
-  protected function is_element($key, $set=[]) {
+  private function is_element($key, $set=[]) {
     $value = $this->data[$key];
     return in_array($value, $set);
   }
-  protected function is_subset($key, $set=[]) {
+  private function is_subset($key, $set=[]) {
     $values = $this->data[$key];
     if (!is_array($values)) {
       return FALSE;
@@ -140,17 +141,6 @@ class HttpRequest {
     }
   }
 
-  public function validate($rules=[]) {
-    $this->errors = [];
-    foreach ($rules as $field_name => $field_rules_str) {
-      $field_rules_array = explode("|", $field_rules_str);
-      foreach ($field_rules_array as $field_rule_str) {
-        if (!$this->validate_rule($field_name, $field_rule_str)) {
-          break;
-        }
-      }
-    }
-  }
   private function validate_rule($key, $rule_str) {
     $valid = TRUE;
     $rule_parts = explode(":", $rule_str);
@@ -255,6 +245,17 @@ class HttpRequest {
         break;
     }
     return $valid;
+  }
+  public function validate($rules=[]) {
+    $this->errors = [];
+    foreach ($rules as $field_name => $field_rules_str) {
+      $field_rules_array = explode("|", $field_rules_str);
+      foreach ($field_rules_array as $field_rule_str) {
+        if (!$this->validate_rule($field_name, $field_rule_str)) {
+          break;
+        }
+      }
+    }
   }
 
   public function input($key) {
