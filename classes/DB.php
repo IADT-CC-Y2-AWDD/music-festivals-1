@@ -21,6 +21,10 @@ class DB {
     return $this->conn;
   }
 
+  public function is_open() {
+    return $this->conn !== null;
+  }
+
   public function close() {
     $this->conn = null;
   }

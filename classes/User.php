@@ -2,7 +2,7 @@
 class User {
   public $id;
   public $email;
-  public $pasword;
+  public $password;
   public $name;
 
   function __construct() {
