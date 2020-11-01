@@ -1,19 +1,13 @@
 <?php
 require_once 'config.php';
-require_once 'lib/validation-errors.php';
 
 if (is_logged_in()) {
   redirect("/home.php");
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
-if ($method === "GET") {
-  // retrieving the form so it can be completed and submitted
+if (!isset($request)) {
   $request = new HttpRequest();
   $request->initialise();
-}
-else if ($method === "POST") {
-  // the form was submitted but there are errors
 }
 ?>
 <!doctype html>
