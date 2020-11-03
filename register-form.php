@@ -7,7 +7,6 @@ if (is_logged_in()) {
 
 if (!isset($request)) {
   $request = new HttpRequest();
-  $request->initialise();
 }
 ?>
 <!doctype html>

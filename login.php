@@ -7,7 +7,6 @@ if (is_logged_in()) {
 
 try {
   $request = new HttpRequest();
-  $request->initialise();
   $rules = [
     "email" => "present|email|minlength:7|maxlength:64",
     "password" => "present|minlength:8|maxlength:64"

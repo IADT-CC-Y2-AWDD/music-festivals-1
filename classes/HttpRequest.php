@@ -7,9 +7,7 @@ class HttpRequest {
   private $data = null;
   private $errors = null;
 
-  public function __construct() {}
-    
-  public function initialise($data = null) {
+  public function __construct($data = null) {
     $this->init_request_method();
     $this->init_request_uri();
     $this->init_request_headers();

@@ -6,14 +6,11 @@ use PHPUnit\Framework\TestCase;
 
 final class HttpRequestTest extends TestCase {
 
-  private $request;
-
   protected function setUp() : void {
-    $this->request = new HttpRequest();
   }
 
   public function testIsPresent() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "email" => "",
       "password" => "secret",
       "name" => "  "
@@ -23,14 +20,14 @@ final class HttpRequestTest extends TestCase {
       "password" => "present",
       "name" => "present"
     ];
-    $this->request->validate($rules);
-    $this->assertNotNull($this->request->error("email"));
-    $this->assertNull($this->request->error("password"));
-    $this->assertNotNull($this->request->error("name"));
+    $request->validate($rules);
+    $this->assertNotNull($request->error("email"));
+    $this->assertNull($request->error("password"));
+    $this->assertNotNull($request->error("name"));
   }
 
   public function testHasLength() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "email" => "abc",
       "password" => "secret",
       "address" => "main street",
@@ -46,17 +43,17 @@ final class HttpRequestTest extends TestCase {
       "county" => "maxlength:5",
       "country" => "maxlength:7"
     ];
-    $this->request->validate($rules);
-    $this->assertNotNull($this->request->error("email"));
-    $this->assertNull($this->request->error("password"));
-    $this->assertNotNull($this->request->error("address"));
-    $this->assertNull($this->request->error("city"));
-    $this->assertNotNull($this->request->error("county"));
-    $this->assertNull($this->request->error("country"));
+    $request->validate($rules);
+    $this->assertNotNull($request->error("email"));
+    $this->assertNull($request->error("password"));
+    $this->assertNotNull($request->error("address"));
+    $this->assertNull($request->error("city"));
+    $this->assertNotNull($request->error("county"));
+    $this->assertNull($request->error("country"));
   }
 
   public function testEmail() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "email_01" => "fred@bloggs.com",
       "email_02" => "fred@.com",
       "email_03" => "@bloggs.com",
@@ -72,17 +69,17 @@ final class HttpRequestTest extends TestCase {
       "email_05" => "email",
       "email_06" => "email",
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("email_01"));
-    $this->assertNotNull($this->request->error("email_02"));
-    $this->assertNotNull($this->request->error("email_03"));
-    $this->assertNotNull($this->request->error("email_04"));
-    $this->assertNotNull($this->request->error("email_05"));
-    $this->assertNotNull($this->request->error("email_06"));
+    $request->validate($rules);
+    $this->assertNull($request->error("email_01"));
+    $this->assertNotNull($request->error("email_02"));
+    $this->assertNotNull($request->error("email_03"));
+    $this->assertNotNull($request->error("email_04"));
+    $this->assertNotNull($request->error("email_05"));
+    $this->assertNotNull($request->error("email_06"));
   }
 
   public function testFloat() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "float_01" => "10",
       "float_02" => "10.1",
       "float_03" => ".1"
@@ -92,14 +89,14 @@ final class HttpRequestTest extends TestCase {
       "float_02" => "float",
       "float_03" => "float"
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("float_01"));
-    $this->assertNull($this->request->error("float_02"));
-    $this->assertNull($this->request->error("float_03"));
+    $request->validate($rules);
+    $this->assertNull($request->error("float_01"));
+    $this->assertNull($request->error("float_02"));
+    $this->assertNull($request->error("float_03"));
   }
 
   public function testInteger() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "integer_01" => "10",
       "integer_02" => "10.1",
       "integer_03" => ".1",
@@ -117,18 +114,18 @@ final class HttpRequestTest extends TestCase {
       "integer_06" => "integer|max:15",
       "integer_07" => "integer|max:5"
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("integer_01"));
-    $this->assertNotNull($this->request->error("integer_02"));
-    $this->assertNotNull($this->request->error("integer_03"));
-    $this->assertNull($this->request->error("integer_04"));
-    $this->assertNotNull($this->request->error("integer_05"));
-    $this->assertNull($this->request->error("integer_06"));
-    $this->assertNotNull($this->request->error("integer_07"));
+    $request->validate($rules);
+    $this->assertNull($request->error("integer_01"));
+    $this->assertNotNull($request->error("integer_02"));
+    $this->assertNotNull($request->error("integer_03"));
+    $this->assertNull($request->error("integer_04"));
+    $this->assertNotNull($request->error("integer_05"));
+    $this->assertNull($request->error("integer_06"));
+    $this->assertNotNull($request->error("integer_07"));
   }
 
   public function testMatch() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "string_01" => "123",
       "string_02" => "abc"
     ]);
@@ -136,13 +133,13 @@ final class HttpRequestTest extends TestCase {
       "string_01" => "match:/[0-9]{3}/",
       "string_02" => "match:/[0-9]{3}/"
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("string_01"));
-    $this->assertNotNull($this->request->error("string_02"));
+    $request->validate($rules);
+    $this->assertNull($request->error("string_01"));
+    $this->assertNotNull($request->error("string_02"));
   }
 
   public function testIn() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "string_01" => "1",
       "string_02" => "4"
     ]);
@@ -150,13 +147,13 @@ final class HttpRequestTest extends TestCase {
       "string_01" => "in:1,2,3",
       "string_02" => "in:1,2,3"
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("string_01"));
-    $this->assertNotNull($this->request->error("string_02"));
+    $request->validate($rules);
+    $this->assertNull($request->error("string_01"));
+    $this->assertNotNull($request->error("string_02"));
   }
 
   public function testNotIn() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "string_01" => "4",
       "string_02" => "1"
     ]);
@@ -164,13 +161,13 @@ final class HttpRequestTest extends TestCase {
       "string_01" => "not_in:1,2,3",
       "string_02" => "not_in:1,2,3"
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("string_01"));
-    $this->assertNotNull($this->request->error("string_02"));
+    $request->validate($rules);
+    $this->assertNull($request->error("string_01"));
+    $this->assertNotNull($request->error("string_02"));
   }
 
   public function testSubset() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "string_01" => [1,2],
       "string_02" => [4,5],
       "string_03" => [5,6]
@@ -180,14 +177,14 @@ final class HttpRequestTest extends TestCase {
       "string_02" => "subset:1,2,3,4",
       "string_03" => "subset:1,2,3,4"
     ];
-    $this->request->validate($rules);
-    $this->assertNull($this->request->error("string_01"));
-    $this->assertNotNull($this->request->error("string_02"));
-    $this->assertNotNull($this->request->error("string_03"));
+    $request->validate($rules);
+    $this->assertNull($request->error("string_01"));
+    $this->assertNotNull($request->error("string_02"));
+    $this->assertNotNull($request->error("string_03"));
   }
 
   public function testNotSubset() : void {
-    $this->request->initialise([
+    $request = new HttpRequest([
       "string_01" => [1,2],
       "string_02" => [4,5],
       "string_03" => [5,6],
@@ -197,10 +194,10 @@ final class HttpRequestTest extends TestCase {
       "string_02" => "not_subset:1,2,3,4",
       "string_03" => "not_subset:1,2,3,4"
     ];
-    $this->request->validate($rules);
-    $this->assertNotNull($this->request->error("string_01"));
-    $this->assertNull($this->request->error("string_02"));
-    $this->assertNull($this->request->error("string_03"));
+    $request->validate($rules);
+    $this->assertNotNull($request->error("string_01"));
+    $this->assertNull($request->error("string_02"));
+    $this->assertNull($request->error("string_03"));
   }
 
   protected function tearDown() : void {
