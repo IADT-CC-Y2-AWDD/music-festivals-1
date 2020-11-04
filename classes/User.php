@@ -44,7 +44,7 @@ class User {
         $this->id = $conn->lastInsertId();
       }
     }
-    finally {if ($db !== null) {
+    finally {
       if ($db !== null && $db->is_open()) {
         $db->close();
       }
