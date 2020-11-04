@@ -16,7 +16,7 @@ class HttpRequest {
   }
   private function init_request_uri() {
     if (isset($_SERVER) && is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER)) {
-      $this->uri = $_SERVER['REQUEST_METHOD'];
+      $this->uri = $_SERVER['REQUEST_URI'];
     }
   }
   private function init_request_method() {
