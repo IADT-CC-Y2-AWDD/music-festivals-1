@@ -18,11 +18,14 @@ class DB {
       $this->conn = new PDO($this->dsn, $this->username,$this->password);
       $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
-    return $this->conn;
   }
 
   public function is_open() {
     return $this->conn !== null;
+  }
+
+  public function get_connection() {
+    return $this->conn;
   }
 
   public function close() {
