@@ -12,7 +12,8 @@ class User {
   public function save() {
     try {
       $db = new DB();
-      $conn = $db->open();
+      $db->open();
+      $conn = $db->get_connection();
 
       $params = [
         ":email" => $this->email,
@@ -43,16 +44,20 @@ class User {
         $this->id = $conn->lastInsertId();
       }
     }
-    finally {
-      $db->close();
+    finally {if ($db !== null) {
+      if ($db !== null && $db->is_open()) {
+        $db->close();
+      }
     }
   }
 
   public function delete() {
+    $db = null;
     try {
       if ($this->id !== null) {
         $db = new DB();
-        $conn = $db->open();
+        $db->open();
+        $conn = $db->get_connection();
 
         $sql = "DELETE FROM users WHERE id = :id" ;
         $params = [
@@ -73,7 +78,9 @@ class User {
       }
     }
     finally {
-      $db->close();
+      if ($db !== null && $db->is_open()) {
+        $db->close();
+      }
     }
   }
 
@@ -82,7 +89,8 @@ class User {
 
     try {
       $db = new DB();
-      $conn = $db->open();
+      $db->open();
+      $conn = $db->get_connection();
 
       $select_sql = "SELECT * FROM users";
       $select_stmt = $conn->prepare($select_sql);
@@ -109,7 +117,9 @@ class User {
       }
     }
     finally {
-      $db->close();
+      if ($db !== null && $db->is_open()) {
+        $db->close();
+      }
     }
 
     return $users;
@@ -120,7 +130,8 @@ class User {
 
     try {
       $db = new DB();
-      $conn = $db->open();
+      $db->open();
+      $conn = $db->get_connection();
 
       $select_sql = "SELECT * FROM users WHERE id = :id";
       $select_params = [
@@ -145,7 +156,9 @@ class User {
       }
     }
     finally {
-      $db->close();
+      if ($db !== null && $db->is_open()) {
+        $db->close();
+      }
     }
 
     return $user;
@@ -156,7 +169,8 @@ class User {
 
     try {
       $db = new DB();
-      $conn = $db->open();
+      $db->open();
+      $conn = $db->get_connection();
 
       $select_sql = "SELECT * FROM users WHERE email = :email";
       $select_params = [
@@ -181,7 +195,9 @@ class User {
       }
     }
     finally {
-      $db->close();
+      if ($db !== null && $db->is_open()) {
+        $db->close();
+      }
     }
 
     return $user;
