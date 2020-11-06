@@ -200,6 +200,105 @@ final class HttpRequestTest extends TestCase {
     $this->assertNull($request->error("string_03"));
   }
 
+  public function testExceptions() : void {
+    $request = new HttpRequest([
+      "string_01" => "abc",
+      "string_02" => "abc",
+      "string_03" => "abc",
+      "string_04" => "abc",
+      "string_05" => "abc",
+      "string_06" => "abc",
+      "string_07" => "abc",
+      "string_08" => "abc",
+      "string_09" => "abc",
+      "string_10" => "abc",
+      "string_11" => "abc",
+      "string_12" => "abc",
+      "string_13" => "abc",
+      "string_14" => "abc",
+      "string_15" => "abc",
+      "string_16" => "abc",
+      "string_17" => "abc",
+      "string_18" => "abc",
+      "string_19" => "abc",
+      "string_20" => "abc",
+      "string_21" => "abc",
+      "string_22" => "abc",
+      "string_23" => "abc",
+      "string_24" => "abc",
+      "string_25" => "abc",
+      "string_26" => "abc",
+      "string_27" => "abc",
+      "string_28" => "abc",
+      "string_29" => "abc",
+      "string_30" => "abc",
+      "string_31" => "abc",
+      "string_32" => "abc",
+      "string_33" => "abc",
+      "string_34" => "abc",
+      "string_35" => "abc",
+      "string_36" => "abc",
+      "string_37" => "abc",
+      "string_38" => "abc",
+      "string_39" => "abc",
+      "string_40" => "abc",
+      "string_41" => "abc"
+    ]);
+    $rules = [
+      "string_01" => "",
+      "string_02" => "present:",
+      "string_03" => "present:abc",
+      "string_04" => "minlength",
+      "string_05" => "minlength:",
+      "string_06" => "minlength:abc",
+      "string_07" => "minlength:1.0",
+      "string_08" => "minlength:-1",
+      "string_09" => "maxlength",
+      "string_10" => "maxlength:abc",
+      "string_11" => "maxlength:1.0",
+      "string_12" => "maxlength:-1",
+      "string_13" => "email:",
+      "string_14" => "email:abc",
+      "string_16" => "float:",
+      "string_17" => "float:1..0",
+      "string_18" => "float:abc",
+      "string_20" => "integer:",
+      "string_21" => "integer:1.0",
+      "string_22" => "integer:abc",
+      "string_23" => "min",
+      "string_24" => "min:abc",
+      "string_25" => "min:1.0",
+      "string_26" => "min:",
+      "string_27" => "max",
+      "string_28" => "max:abc",
+      "string_29" => "max:1.0",
+      "string_30" => "max:",
+      "string_31" => "boolean:",
+      "string_32" => "boolean:abc",
+      "string_33" => "match:",
+      "string_34" => "match:abc",
+      "string_35" => "match",
+      "string_36" => "in",
+      "string_37" => "in:",
+      "string_38" => "not_in",
+      "string_39" => "not_in:",
+      "string_40" => "subset",
+      "string_41" => "subset:",
+      "string_40" => "not_subset",
+      "string_41" => "not_subset:"
+    ];
+    foreach ($rules as $key => $rule) {
+      $ex = null;
+      try {
+        $request->validate([$key => $rule]);
+      }
+      catch(Exception $e) {
+        $ex = $e;
+      }
+      $this->assertNotNull($ex);
+    }
+  }
+
   protected function tearDown() : void {
   }
 }
