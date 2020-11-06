@@ -6,6 +6,7 @@ class HttpRequest {
   public $cookies = null;
   private $data = null;
   private $errors = null;
+  private $session = null;
 
   public function __construct($data = null) {
     $this->init_request_method();
@@ -13,6 +14,7 @@ class HttpRequest {
     $this->init_request_headers();
     $this->init_request_cookies();
     $this->init_request_data($data);
+    $this->init_session();
   }
   private function init_request_uri() {
     if (isset($_SERVER) && is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER)) {
@@ -56,6 +58,37 @@ class HttpRequest {
           break;
       }
     }
+  }
+  private function init_session() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $this->session = new class {
+      public function get($key) {
+        if (isset($_SESSION) && is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
+          return $_SESSION[$key];
+        }
+        else return null;
+      }
+      public function has($key) {
+        return (isset($_SESSION) && is_array($_SESSION) && array_key_exists($key, $_SESSION));
+      }
+      public function set($key, $value) {
+        if (isset($_SESSION) && is_array($_SESSION)) {
+          $_SESSION[$key] = $value;
+        }
+      }
+      public function forget($key) {
+        if (isset($_SESSION) && is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
+          unset($_SESSION[$key]);
+        }
+      }
+      public function flush() {
+        if (isset($_SESSION)) {
+          session_unset ();
+        }
+      }
+    };
   }
 
   private function is_present($key) {
@@ -121,15 +154,15 @@ class HttpRequest {
     $boolean = $this->data[$key];
     return filter_var($boolean, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== NULL;
   }
-  private function is_match($key, $regex='//') {
+  private function is_match($key, $regex) {
     $value = $this->data[$key];
     return preg_match($regex, $value) === 1;
   }
-  private function is_element($key, $set=[]) {
+  private function is_element($key, $set) {
     $value = $this->data[$key];
     return in_array($value, $set);
   }
-  private function is_subset($key, $set=[]) {
+  private function is_subset($key, $set) {
     $values = $this->data[$key];
     if (!is_array($values)) {
       return FALSE;
@@ -140,110 +173,213 @@ class HttpRequest {
   }
 
   private function validate_rule($key, $rule_str) {
+    if ($rule_str === "") {
+      throw new Exception("Error in validation rule for " . $key);
+    }
     $valid = TRUE;
     $rule_parts = explode(":", $rule_str);
     $rule_name = $rule_parts[0];
+    if (count($rule_parts) > 1) {
+      $options = array_slice($rule_parts, 1);
+    }
+    else {
+      $options = [];
+    }
     switch ($rule_name) {
-      case "present" :
-        if (!$this->is_present($key)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a value for " . $key;
-        }
+      case "present"    : $valid = $this->validate_rule_present($key, $options);    break;
+      case "minlength"  : $valid = $this->validate_rule_minlength($key, $options);  break;
+      case "maxlength"  : $valid = $this->validate_rule_maxlength($key, $options);  break;
+      case "email"      : $valid = $this->validate_rule_email($key, $options);      break;
+      case "float"      : $valid = $this->validate_rule_float($key, $options);      break;
+      case "integer"    : $valid = $this->validate_rule_integer($key, $options);    break;
+      case "min"        : $valid = $this->validate_rule_min($key, $options);        break;
+      case "max"        : $valid = $this->validate_rule_max($key, $options);        break;
+      case "boolean"    : $valid = $this->validate_rule_boolean($key, $options);    break;
+      case "match"      : $valid = $this->validate_rule_match($key, $options);      break;
+      case "in"         : $valid = $this->validate_rule_in($key, $options);         break;
+      case "not_in"     : $valid = $this->validate_rule_not_in($key, $options);     break;
+      case "subset"     : $valid = $this->validate_rule_subset($key, $options);     break;
+      case "not_subset" : $valid = $this->validate_rule_not_subset($key, $options); break;
+      default           : 
+        throw new Exception("Error in validation rule for " . $key);
         break;
-      case "minlength" :
-        $min = $rule_parts[1];
-        if (!$this->has_length($key, ["min" => $min])) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter at least " .$min . " characters for " . $key;
-        }
-        break;
-      case "maxlength" :
-        $max = $rule_parts[1];
-        if (!$this->has_length($key, ["max" => $max])) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter at most " .$max . " characters for " . $key;
-        }
-        break;
-      case "email" :
-        if (!$this->is_safe_email($key) || !$this->is_valid_email($key)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a valid email for " . $key;
-        }
-        break;
-      case "float" :
-        if (!$this->is_safe_float($key) || !$this->is_valid_float($key)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a valid float for " . $key;
-        }
-        break;
-      case "integer" :
-        if (!$this->is_safe_integer($key) || !$this->is_valid_integer($key)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a valid integer for " . $key;
-        }
-        break;
-      case "min" :
-        $min = $rule_parts[1];
-        if (!$this->is_safe_integer($key) || !$this->is_valid_integer($key, ["min_range" => $min])) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a valid integer greater than or equal to " . $min ." for " . $key;
-        }
-        break;
-      case "max" :
-        $max = $rule_parts[1];
-        if (!$this->is_safe_integer($key) || !$this->is_valid_integer($key, ["max_range" => $max])) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a valid integer less than or equal to " . $max ." for " . $key;
-        }
-        break;
-      case "boolean" :
-        if (!$this->is_safe_boolean($key) || !$this->is_valid_boolean($key)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a valid boolean for " . $key;
-        }
-        break;
-      case "match" :
-        $regex = substr($rule_str, strpos($rule_str, ":") + 1);
-        if (!$this->is_match($key, $regex)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter string that matches the pattern " . $regex . " for " . $key;
-        }
-        break;
-      case "in" :
-        $values_string = $rule_parts[1];
-        $values_array = explode(",", $values_string);
-        if (!$this->is_element($key, $values_array)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a value in the list " . $values_string . " for " . $key;
-        }
-        break;
-      case "not_in" :
-        $values_string = $rule_parts[1];
-        $values_array = explode(",", $values_string);
-        if ($this->is_element($key, $values_array)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter a value not in the list " . $values_string . " for " . $key;
-        }
-        break;
-      case "subset" :
-        $values_string = $rule_parts[1];
-        $values_array = explode(",", $values_string);
-        if (!$this->is_subset($key, $values_array)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter values in the list " . $values_string . " for " . $key;
-        }
-        break;
-      case "not_subset" :
-        $values_string = $rule_parts[1];
-        $values_array = explode(",", $values_string);
-        if ($this->is_subset($key, $values_array)) {
-          $valid = FALSE;
-          $this->errors[$key] = "Please enter values not in the list " . $values_string . " for " . $key;
-        }
-        break;
+      }
+    return $valid;
+  }
+  private function validate_rule_present($key, $options) {
+    if (!empty($options)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    if (!$this->is_present($key)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a value for " . $key;
     }
     return $valid;
   }
+  private function validate_rule_minlength($key, $options) {
+    if (count($options) !== 1 || 
+        (filter_var($options[0], FILTER_VALIDATE_INT) === false) ||
+        (int)$options[0] < 1) 
+    {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $min = $options[0];
+    if (!$this->has_length($key, ["min" => $min])) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter at least " .$min . " characters for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_maxlength($key, $options) {
+    if (count($options) !== 1 || 
+        (filter_var($options[0], FILTER_VALIDATE_INT) === false) ||
+        (int)$options[0] < 1) 
+    {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $max = $options[0];
+    if (!$this->has_length($key, ["max" => $max])) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter at most " .$max . " characters for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_email($key, $options) {
+    if (!empty($options)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    if (!$this->is_safe_email($key) || !$this->is_valid_email($key)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a valid email for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_float($key, $options) {
+    if (!empty($options)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    if (!$this->is_safe_float($key) || !$this->is_valid_float($key)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a valid float for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_integer($key, $options) {
+    if (!empty($options)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    if (!$this->is_safe_integer($key) || !$this->is_valid_integer($key)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a valid integer for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_min($key, $options) {
+    if (count($options) !== 1 || (filter_var($options[0], FILTER_VALIDATE_INT) === false)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $min = $options[0];
+    if (!$this->is_safe_integer($key) || !$this->is_valid_integer($key, ["min_range" => $min])) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a valid integer greater than or equal to " . $min ." for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_max($key, $options) {
+    if (count($options) !== 1 || (filter_var($options[0], FILTER_VALIDATE_INT) === false)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $max = $options[0];
+    if (!$this->is_safe_integer($key) || !$this->is_valid_integer($key, ["max_range" => $max])) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a valid integer less than or equal to " . $max ." for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_boolean($key, $options) {
+    if (!empty($options)) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    if (!$this->is_valid_boolean($key)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a boolean value for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_match($key, $options) {
+    if (count($options) !== 1 || preg_match($options[0], "") === FALSE) {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $regex = $options[0];
+    if (!$this->is_match($key, $regex)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter string that matches the pattern " . $regex . " for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_in($key, $options) {
+    if (count($options) !== 1 || $options[0] === "") {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $values_string = $options[0];
+    $values_array = explode(",", $values_string);
+    if (!$this->is_element($key, $values_array)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a value in the list " . $values_string . " for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_not_in($key, $options) {
+    if (count($options) !== 1 || $options[0] === "") {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $values_string = $options[0];
+    $values_array = explode(",", $values_string);
+    if ($this->is_element($key, $values_array)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter a value not in the list " . $values_string . " for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_subset($key, $options) {
+    if (count($options) !== 1 || $options[0] === "") {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $values_string = $options[0];
+    $values_array = explode(",", $values_string);
+    if (!$this->is_subset($key, $values_array)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter values in the list " . $values_string . " for " . $key;
+    }
+    return $valid;
+  }
+  private function validate_rule_not_subset($key, $options) {
+    if (count($options) !== 1 || $options[0] === "") {
+      throw new Exception("Error in validation rule for " . $key);
+    }
+    $valid = TRUE;
+    $values_string = $options[0];
+    $values_array = explode(",", $values_string);
+    if ($this->is_subset($key, $values_array)) {
+      $valid = FALSE;
+      $this->errors[$key] = "Please enter values not in the list " . $values_string . " for " . $key;
+    }
+    return $valid;
+  }
+
   public function validate($rules=[]) {
     $this->errors = [];
     foreach ($rules as $field_name => $field_rules_str) {
@@ -254,6 +390,10 @@ class HttpRequest {
         }
       }
     }
+  }
+
+  public function session() {
+    return $this->session;
   }
 
   public function input($key) {
