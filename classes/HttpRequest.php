@@ -16,6 +16,9 @@ class HttpRequest {
     $this->init_request_data($data);
     $this->init_session();
   }
+  //-----------------------------------------------------------------------------------------------
+  // private methods to initialise request
+  //-----------------------------------------------------------------------------------------------
   private function init_request_uri() {
     if (isset($_SERVER) && is_array($_SERVER) && array_key_exists('REQUEST_URI', $_SERVER)) {
       $this->uri = $_SERVER['REQUEST_URI'];
@@ -90,7 +93,9 @@ class HttpRequest {
       }
     };
   }
-
+  //-----------------------------------------------------------------------------------------------
+  // private validation methods
+  //-----------------------------------------------------------------------------------------------
   private function is_present($key) {
     $value = $this->data[$key];
   	if (is_array($value)) {
@@ -171,7 +176,9 @@ class HttpRequest {
       return (count(array_diff($values, $set)) === 0);
     }
   }
-
+  //-----------------------------------------------------------------------------------------------
+  // private rule validation methods
+  //-----------------------------------------------------------------------------------------------
   private function validate_rule($key, $rule_str) {
     if ($rule_str === "") {
       throw new Exception("Error in validation rule for " . $key);
@@ -379,7 +386,9 @@ class HttpRequest {
     }
     return $valid;
   }
-
+  //-----------------------------------------------------------------------------------------------
+  // public methods
+  //-----------------------------------------------------------------------------------------------
   public function validate($rules=[]) {
     $this->errors = [];
     foreach ($rules as $field_name => $field_rules_str) {
@@ -391,11 +400,9 @@ class HttpRequest {
       }
     }
   }
-
   public function session() {
     return $this->session;
   }
-
   public function input($key) {
     if (isset($this->data) && is_array($this->data) && array_key_exists($key, $this->data)) {
       return $this->data[$key];
