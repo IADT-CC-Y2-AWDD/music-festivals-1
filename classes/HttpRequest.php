@@ -6,6 +6,7 @@ class HttpRequest {
   public $cookies = null;
   private $data = null;
   private $errors = null;
+  private $exception = null;
   private $session = null;
 
   public function __construct($data = null) {
@@ -441,20 +442,13 @@ class HttpRequest {
     return $chosen;
   }
   public function has_exception() {
-    return (isset($this->errors) && is_array($this->errors) && array_key_exists(KEY_EXCEPTION, $this->errors));
+    return $this->exception !== null;
   }
   public function get_exception() {
-    if (isset($this->errors) && is_array($this->errors) && array_key_exists(KEY_EXCEPTION, $this->errors)) {
-      return $this->errors[KEY_EXCEPTION];
-    }
-    else {
-      return null;
-    }
+    return $this->exception;
   }
   public function set_exception($message) {
-    if (isset($this->errors) && is_array($this->errors) && !array_key_exists(KEY_EXCEPTION, $this->errors)) {
-      $this->errors[KEY_EXCEPTION] = $message;
-    }
+    $this->exception = $message;
   }
 }
 ?>
